@@ -1,0 +1,45 @@
+# Configuration file for setting log levels.
+# To define local overrides, add a file "logging.local.yml"
+
+# Required.  Do not touch or alter.
+version: 1
+
+# Definition of the output format for the handlers.
+#
+# Users should generally not touch this section.
+formatters:
+  default:
+    format: '%(asctime)s %(levelname)-8s %(threadName)s %(name)-15s:%(lineno)d %(message)s'
+  stack:
+    (): 'ooi.logging.format.StackFormatter'
+    format: '%(asctime)s %(levelname)-8s %(threadName)s %(name)-15s:%(lineno)d %(message)s'
+  raw:
+    (): 'ooi.logging.format.RawRecordFormatter'
+
+handlers:
+  stack:
+    class: logging.handlers.RotatingFileHandler
+    formatter: stack
+    level: DEBUG
+    filename: /tmp/unittest-stack.log
+  block:
+    class: ooi.logging.handler.BlockIOFileHandler
+    formatter: default
+    level: DEBUG
+    filename: /tmp/unittest-block.log
+  raw:
+    class: logging.handlers.RotatingFileHandler
+    formatter: raw
+    level: DEBUG
+    filename: /tmp/unittest-raw.log
+
+loggers:
+  stack:
+    handlers: [stack]
+    level: INFO
+  block:
+    handlers: [block]
+    level: INFO
+  raw:
+    handlers: [raw]
+    level: INFO
