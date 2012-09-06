@@ -1,6 +1,7 @@
 Share utilities across OOI projects.
 
-Note: these classes should have NO dependencies on any other OOI projects. 
+Note: these classes may have NO dependencies on any other OOI projects.
 Non-project eggs are ok, BUT keep in mind that making this project depend on an egg
-means making EVERY other project depend on this egg too.
+means making EVERY other project will depend on this egg too.
 
+Current dependencies are pyyaml and graypy.
