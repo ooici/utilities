@@ -35,6 +35,7 @@ class TestStackLogger(TestCase):
         self.assertEquals(1, len(self.get_lines()))
 
     def test_generic_exception(self):
+        """ stack trace should be compact form """
         try:
             splotgorpsh()
         except:
@@ -46,7 +47,7 @@ class TestStackLogger(TestCase):
         self.assertTrue("splotgorpsh" in lines[2])
 
     def test_chained_exception(self):
-        thrown=0
+        """ chained stack traces should be compact, columns should be aligned """
         try:
             try:
                 splotgorpsh()

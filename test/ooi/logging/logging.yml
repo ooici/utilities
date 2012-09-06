@@ -1,12 +1,9 @@
-# Configuration file for setting log levels.
-# To define local overrides, add a file "logging.local.yml"
-
-# Required.  Do not touch or alter.
-version: 1
-
-# Definition of the output format for the handlers.
+###
+# logging configuration file for unit tests
 #
-# Users should generally not touch this section.
+# do not change without testing that it doesn't break any of the unit tests in this project!
+#
+version: 1
 formatters:
   default:
     format: '%(asctime)s %(levelname)-8s %(threadName)s %(name)-15s:%(lineno)d %(message)s'
@@ -32,6 +29,11 @@ handlers:
     formatter: raw
     level: DEBUG
     filename: /tmp/unittest-raw.log
+  replay:
+    class: logging.handlers.RotatingFileHandler
+    formatter: stack
+    level: DEBUG
+    filename: /tmp/unittest-replay.log
 
 loggers:
   stack:
@@ -43,3 +45,6 @@ loggers:
   raw:
     handlers: [raw]
     level: INFO
+  replay:
+    handlers: [replay]
+    level: DEBUG

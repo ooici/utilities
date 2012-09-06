@@ -31,17 +31,14 @@
     to by the running application.
 """
 
-import graypy
 import os
 import sys
 import logging
 
-class GELFReplayer(object):
-    def __init__(self, server, port=12201, delete=True, level=logging.DEBUG):
-        self._sender = graypy.GELFHander(server, port)
-        self._sender.setLevel(level)
+class Replayer(object):
+    def __init__(self, handler, delete=True):
         self._delete_file = delete
-
+        self._sender = handler
     def relay(self, *filenames):
         """ process each of the filenames given by forwarding log record contents to the GELF server.
             handles files in reverse order so rotated logs can be specified by wildcard (file.log.*) 
@@ -50,8 +47,9 @@ class GELFReplayer(object):
         # function needed by the exec below
         handle_record_dict = self._handle
 
-        filenames.reverse() # work oldest to newest
-        for filename in filenames:
+        name_list = [ name for name in filenames ] # convert tuple to list
+        name_list.reverse() # work oldest to newest
+        for filename in name_list:
             with open(filename, 'r') as f:
                 contents = f.read()
             exec contents ## DANGER, DANGER!
@@ -64,10 +62,16 @@ class GELFReplayer(object):
         self._sender.emit(record)
         
 if __name__ == '__main__':
+    """ when run as application, replay raw logs to a GELF server """
     if len(sys.argv)<3:
         print 'USAGE: python ' + __file__ + " server logfile..."
         exit(1)
     server = sys.argv[1]
     filenames = sys.argv[2:]
-    obj = GELFReplayer(server)
+
+    import graypy
+    handler = graypy.GELFHander(server, 12201)
+    handler.setLevel(logging.DEBUG)
+
+    obj = Replayer(handler)
     obj.relay(*filenames)
