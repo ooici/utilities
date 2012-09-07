@@ -15,7 +15,7 @@ BLOCK_SIZE = 512
 # this handler keeps track of the original size and how much was appended.
 # when DEBUGGING_POSITION is True, it verifies that this matches the OS size.
 # set to False to reduce OS and possibly very slow HW calls.
-DEBUG_POSITION=True
+DEBUG_POSITION=False
 
 class BlockIOFileHandler(logging.handlers.RotatingFileHandler):
     """ standard RotatingFileHandler except

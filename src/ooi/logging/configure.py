@@ -34,7 +34,6 @@ class _LoggingConfiguration(object):
     def add_configuration(self, configuration):
         if isinstance(configuration, dict):
             self._add_dictionary(self.current_config, configuration)
-            print 'dict: ' + repr(self.current_config)
             logging.config.dictConfig(self.current_config)
         elif isinstance(configuration, str):
             # is a configuration file or resource -- try both
