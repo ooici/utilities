@@ -9,14 +9,15 @@ import traceback
 import sys
 
 class ApplicationException(Exception):
-    def __init__(self, retain_cause=True, *a, **b):
+#    def __init__(self, retain_cause=True, *a, **b):
+    def __init__(self, *a, **b):
         super(ApplicationException,self).__init__(*a,**b)
         self._stacks = []
         # save current stack
         self._stack_init = traceback.extract_stack()
         self._stacks.append((self.__class__.__name__ + ': ' + str(self), traceback.extract_stack()))
         # save cause and its stack
-        cause_info = sys.exc_info() if retain_cause else (None,None,None)
+        cause_info = sys.exc_info() #if retain_cause else (None,None,None)
         self._cause = cause_info[1]
         cause_label = 'caused by: ' + self._cause.__class__.__name__ + ': ' + str(self._cause)
         if isinstance(self._cause, ApplicationException) and len(self._cause._stacks):

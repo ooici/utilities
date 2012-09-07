@@ -118,6 +118,7 @@ class _ScopedLogger(object):
     def debug(self,*a,**b):             return self._install_logger().debug(*a,**b)
     def info(self,*a,**b):              return self._install_logger().info(*a,**b)
     def warning(self,*a,**b):           return self._install_logger().warning(*a,**b)
+    def warn(self,*a,**b):              return self._install_logger().warn(*a,**b)
     def error(self,*a,**b):             return self._install_logger().error(*a,**b)
     def critical(self,*a,**b):          return self._install_logger().critical(*a,**b)
     def log(self,*a,**b):               return self._install_logger().log(*a,**b)

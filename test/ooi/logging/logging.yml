@@ -48,3 +48,6 @@ loggers:
   replay:
     handlers: [replay]
     level: DEBUG
+  list:
+    handlers: [replay, raw]
+    level: DEBUG

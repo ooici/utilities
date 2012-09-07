@@ -34,6 +34,7 @@ class _LoggingConfiguration(object):
     def add_configuration(self, configuration):
         if isinstance(configuration, dict):
             self._add_dictionary(self.current_config, configuration)
+            print 'dict: ' + repr(self.current_config)
             logging.config.dictConfig(self.current_config)
         elif isinstance(configuration, str):
             # is a configuration file or resource -- try both
@@ -52,8 +53,14 @@ class _LoggingConfiguration(object):
         self.add_configuration(configuration)
 
     def set_level(self, scope, level):
-        config = { 'loggers': { scope: level } }
+        config = { 'loggers': { scope: {'level':level }}}
         self.add_configuration(config)
+
+    def set_all_levels(self, level):
+        changes = {}
+        for scope in self.current_config['loggers'].keys():
+            changes[changes] = {'level':level}
+        self.add_configuration(changes)
 
     def get_configuration(self):
         return self.current_config
@@ -82,7 +89,9 @@ class _LoggingConfiguration(object):
                 if isinstance(current[key], collections.Mapping):
                     self._add_dictionary(current[key], added[key])
                 elif isinstance(current[key], list):
-                    current[key].append(added[key])
+                    for item in added[key]:
+                        if item not in current[key]:
+                            current[key].append(item)
                 else:
                     current[key] = added[key]
             else:
