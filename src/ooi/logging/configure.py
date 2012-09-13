@@ -82,17 +82,10 @@ class _LoggingConfiguration(object):
         return None
 
     def _add_dictionary(self, current, added):
-        """ from pyon.core.common, except allow recursion (logging config isn't too deep) and combine lists """
+        """ from pyon.core.common, except allow recursion (logging config isn't too deep) """
         for key in added:
-            if key in current:
-                if isinstance(current[key], collections.Mapping):
-                    self._add_dictionary(current[key], added[key])
-                elif isinstance(current[key], list):
-                    for item in added[key]:
-                        if item not in current[key]:
-                            current[key].append(item)
-                else:
-                    current[key] = added[key]
+            if key in current and isinstance(current[key], collections.Mapping):
+                self._add_dictionary(current[key], added[key])
             else:
                 current[key] = added[key]
 
