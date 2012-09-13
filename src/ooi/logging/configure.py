@@ -75,7 +75,7 @@ class _LoggingConfiguration(object):
 
     def _read_resource(self, resource_name):
         try:
-            return resource_string(__name__, resource_name)
+            return resource_string('', resource_name)
         except IOError, e:
             if e.errno != errno.ENOENT:
                 print 'ERROR: error reading logging configuration resource ' + repr(resource_name) + ': ' + str(e)
