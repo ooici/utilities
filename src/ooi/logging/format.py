@@ -4,6 +4,7 @@ import traceback
 import ooi.exception
 import sys
 
+
 class StackFormatter(logging.Formatter):
     """ logging formatter that:
         - displays exception stack traces one line per frame, with aligned columns
@@ -38,16 +39,20 @@ class StackFormatter(logging.Formatter):
         self._format_string = '%%%ds:%%-7d%%s'%width #ie- "%40s:%-7d%s" --> .../path/to/filename.py:123    line.of_code()
 
     def formatException(self, record):
-        type,ex,tb = sys.exc_info()
-        # use special exception logging only for IonExceptions with more than one saved stack
-        if isinstance(ex, ooi.exception.ApplicationException):
-            stacks = ex.get_stacks()
-        else:
-            stacks = [ ('exception: '+str(ex), traceback.extract_tb(tb) if tb else None) ]
-        lines = []
-        for label,stack in stacks:
-            lines += self.format_stack(label, stack)
-        return '\n'.join(lines)
+        try:
+            type,ex,tb = sys.exc_info()
+            # use special exception logging only for IonExceptions with more than one saved stack
+            if isinstance(ex, ooi.exception.ApplicationException):
+                stacks = ex.get_stacks()
+            else:
+                stacks = [ ('exception: '+str(ex), traceback.extract_tb(tb) if tb else None) ]
+            lines = []
+            for label,stack in stacks:
+                lines += self.format_stack(label, stack)
+            return '\n'.join(lines)
+        except Exception,e:
+            print 'WARNING: StackFormatter could not dislay stack: %s (submitting to default formatter)' % e
+            return super(logging.Formatter,self).formatException(self,record)
 
     def format_stack(self, label, stack):
         first_stack = label=='__init__'  # skip initial label -- start output with first stack frame
@@ -70,6 +75,7 @@ class StackFormatter(logging.Formatter):
         """
         return stack
 
+
 class RawRecordFormatter(logging.Formatter):
     """ non-readable formatter that encodes all record fields to store for later processing.
         to re-read the file later, define a function "handle_raw" and exec the log entries.
@@ -79,3 +85,49 @@ class RawRecordFormatter(logging.Formatter):
             record.exc_text = self.formatException(record.exc_info)
             record.exc_info = None
         return 'handle_record_dict(' + repr(record.__dict__) + ')\n'
+
+
+class FieldFormatter(logging.Formatter):
+    """ display special values added by AddField filter.
+        useful for debugging extra fields added via the threadlocal mechanism
+        without having to use graylog to see them.
+
+        create with logging.yml:
+
+          formatter:
+            (): ooi.logging.format.FieldFormatter
+            fields: threadID,userName,conversationID
+
+        and set these fields in code:
+
+          from ooi.logging import config
+          config.set_logging_fields( {'call':'conversationID'}, {'userName':'bob'} )
+
+        and set the thread-local parts
+
+          import threading
+          x = threading.local()
+          x.call = 'abc'
+
+          from ooi.logging import log
+          log.warning('pop goes the weasel')
+
+        should produce this output:
+
+          <date,time,level,etc> threadID?? userName=bob conversationID=abc: pop goes the weasel
+    """
+
+    def __init__(self, fields,*a,**b):
+        super(logging.Formatter,self).__init__(*a,**b)
+        self.fields = ','.split(fields)
+
+    def format(self, record):
+        line = ''
+        for field in self.fields:
+            if hasattr(record,field):
+                line += '%s: %s '%(field,getattr(record,field))
+            else:
+                line += '%s?? '%field
+        line += ': ' + record.message
+        record.message = line
+        return super(logging.Formatter,self).format(record)

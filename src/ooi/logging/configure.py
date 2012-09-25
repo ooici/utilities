@@ -29,9 +29,20 @@ import logger
 
 class _LoggingConfiguration(object):
 
+    debug = False
     current_config = {}
 
+    def set_debug(self, value=True):
+        """print all calls to public methods"""
+        self.debug = value
+
     def add_configuration(self, configuration):
+        if self.debug:
+            print 'DEBUG LOGGING: add_configuration: %r\nStack trace:' % configuration
+            self._print_caller()
+
+        if not configuration:
+            return # no config = no-op
         if isinstance(configuration, dict):
             self._add_dictionary(self.current_config, configuration)
             logging.config.dictConfig(self.current_config)
@@ -52,10 +63,16 @@ class _LoggingConfiguration(object):
         self.add_configuration(configuration)
 
     def set_level(self, scope, level):
+        if self.debug:
+            print 'DEBUG LOGGING: set_level: %s: %s\nStack trace:' % (scope,level)
+            self._print_caller()
         config = { 'loggers': { scope: {'level':level }}}
         self.add_configuration(config)
 
     def set_all_levels(self, level):
+        if self.debug:
+            print 'DEBUG LOGGING: set_all_levels: %s\nStack trace:' % level
+            self._print_caller()
         changes = {}
         for scope in self.current_config['loggers'].keys():
             changes[changes] = {'level':level}
@@ -94,5 +111,11 @@ class _LoggingConfiguration(object):
         ooi.logging.log._add_filter(filter)
 
     def set_logging_fields(self, thread_local_fields, constant_fields):
+        """WARNING: calling multiple times is currently additive -- will not replace fields"""
         filter = logger.AddFields(thread_local_fields, constant_fields)
         self.add_filter(filter)
+
+    def _print_caller(self):
+        """ display stack when enabled """
+        import traceback
+        print '\n'.join(['%s:%d %s'%(f,l,c) for f,l,m,c in traceback.extract_stack()])
