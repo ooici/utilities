@@ -52,7 +52,7 @@ class StackFormatter(logging.Formatter):
             return '\n'.join(lines)
         except Exception,e:
             print 'WARNING: StackFormatter could not dislay stack: %s (submitting to default formatter)' % e
-            return super(StackFormatter,self).formatException(self,record)
+            return super(StackFormatter,self).formatException(record)
 
     def format_stack(self, label, stack):
         first_stack = label=='__init__'  # skip initial label -- start output with first stack frame
