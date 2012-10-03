@@ -67,7 +67,8 @@ TRACE=5
 logging.TRACE = TRACE
 logging.addLevelName(TRACE, 'TRACE')
 def trace(self, message, *args, **kws):
-    self._log(TRACE, message, args, **kws) # resist the urge to stick your * in my args
+    if self.isEnabledFor(TRACE):
+        self._log(TRACE, message, args, **kws) # resist the urge to stick your * in my args
 logging.Logger.trace = trace
 
 
