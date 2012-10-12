@@ -45,6 +45,7 @@ class _LoggingConfiguration(object):
         if not configuration:
             return # no config = no-op
         if isinstance(configuration, dict):
+            self.current_config['disable_existing_loggers'] = False
             self._add_dictionary(self.current_config, configuration)
             logging.config.dictConfig(self.current_config)
             if self.debug:
@@ -109,8 +110,6 @@ class _LoggingConfiguration(object):
                 self._add_dictionary(current[key], added[key])
             else:
                 current[key] = added[key]
-        current['incremental'] = False
-        current['disable_existing_loggers'] = False
 
     def add_filter(self, filter):
         """ add a filter to all new loggers created """
@@ -123,5 +122,8 @@ class _LoggingConfiguration(object):
 
     def _print_caller(self):
         """ display stack when enabled """
-        import traceback
-        print '\n'.join(['%s:%d %s'%(f,l,c) for f,l,m,c in traceback.extract_stack()])
+        try:
+            import traceback
+            print '\n'.join(['%s:%d %s'%(f,l,c) for f,l,m,c in traceback.extract_stack()])
+        except:
+            print 'failed to get stack information'
