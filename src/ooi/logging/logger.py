@@ -99,16 +99,27 @@ class _ScopedLogger(object):
         self._filters.add(filter)
 
     def _install_logger(self):
+        name = "UNKNOWN_MODULE_NAME"
+        module = None
+
         stack = inspect.stack()
         # stack[0]: call to inspect.stack() on the line above
         # stack[1]: call to _install_logger() by one of the delegate methods below
         frame=stack[2] # call to the delegate method from some outside calling module
-        module = inspect.getmodule(frame[0])
-        module.log = logging.getLogger(module.__name__)
+        if frame and frame[0]:
+            module = inspect.getmodule(frame[0])
+            if module:
+                name = module.__name__
+            elif frame[1]:
+                name = frame[1]
+
+        logger = logging.getLogger(name)
         for filter in self._filters:
-            module.log.addFilter(filter)
-        #        setattr(module.log, 'trace', lambda *args: module.log.log(5, *args))
-        return module.log
+            logger.addFilter(filter)
+
+        if module:
+            module.log = logger
+        return logger
 
     # all Logger methods quietly install the true logger object and then delegate
     def setLevel(self,*a,**b):          return self._install_logger().setLevel(*a,**b)

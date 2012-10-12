@@ -26,6 +26,7 @@ import collections
 from pkg_resources import resource_string
 import ooi.logging
 import logger
+import time
 
 class _LoggingConfiguration(object):
 
@@ -46,12 +47,15 @@ class _LoggingConfiguration(object):
         if isinstance(configuration, dict):
             self._add_dictionary(self.current_config, configuration)
             logging.config.dictConfig(self.current_config)
+            if self.debug:
+                print 'DEBUG LOGGING: configuration: %r' % self.current_config
         elif isinstance(configuration, str):
             # is a configuration file or resource -- try both
             contents = self._read_file(configuration) or self._read_resource(configuration)
             if not contents:
                 raise IOError('failed to locate logging configuration file: ' + configuration)
-            self.add_configuration(yaml.load(contents))
+            parsed = yaml.load(contents)
+            self.add_configuration(parsed)
         elif isinstance(configuration, list) or isinstance(configuration, tuple):
             for item in configuration:
                 self.add_configuration(item)
@@ -105,6 +109,8 @@ class _LoggingConfiguration(object):
                 self._add_dictionary(current[key], added[key])
             else:
                 current[key] = added[key]
+        current['incremental'] = False
+        current['disable_existing_loggers'] = False
 
     def add_filter(self, filter):
         """ add a filter to all new loggers created """
