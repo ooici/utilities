@@ -15,18 +15,22 @@ class ApplicationException(Exception):
         self._stacks = []
         # save current stack
         self._stack_init = traceback.extract_stack()
-        self._stacks.append((self.__class__.__name__ + ': ' + str(self), traceback.extract_stack()))
+        self.add_stack(self.__class__.__name__ + ': ' + str(self), traceback.extract_stack())
         # save cause and its stack
         cause_info = sys.exc_info() #if retain_cause else (None,None,None)
         self._cause = cause_info[1]
-        cause_label = 'caused by: ' + self._cause.__class__.__name__ + ': ' + str(self._cause)
-        if isinstance(self._cause, ApplicationException) and len(self._cause._stacks):
-            self.add_stack(cause_label, self._cause._stacks[0])
-            if len(self._cause._stacks)>1:
-                self._stacks += self._cause._stacks[1:]
-        else:
-            self._stack_cause = traceback.extract_tb(cause_info[2]) if cause_info[2] else None
-            if self._cause:
+        if self._cause:
+            cause_label = 'caused by: ' + self._cause.__class__.__name__ + ': ' + str(self._cause)
+            if isinstance(self._cause, ApplicationException) and len(self._cause._stacks):
+                first = True
+                for label,stack in self._cause._stacks:
+                    if first:
+                        self.add_stack(cause_label, stack)
+                        first = False
+                    else:
+                        self.add_stack(label, stack)
+            elif cause_info[2]:
+                self._stack_cause = traceback.extract_tb(cause_info[2])
                 self.add_stack(cause_label, self._stack_cause)
 
     def drop_chained_init_frame(self):
