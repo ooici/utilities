@@ -26,7 +26,7 @@ import collections
 from pkg_resources import resource_string
 import ooi.logging
 import logger
-import time
+import sys
 
 class _LoggingConfiguration(object):
 
@@ -37,46 +37,61 @@ class _LoggingConfiguration(object):
         """print all calls to public methods"""
         self.debug = value
 
-    def add_configuration(self, configuration):
+    def add_configuration(self, configuration, initial=False):
         if self.debug:
-            print 'DEBUG LOGGING: add_configuration: %r\nStack trace:' % configuration
+            print >> sys.stderr, 'DEBUG LOGGING: add_configuration: %r' % configuration
             self._print_caller()
 
         if not configuration:
             return # no config = no-op
         if isinstance(configuration, dict):
+            if not initial:
+                self._warn_about_supplemental_handlers(configuration)
             self.current_config['disable_existing_loggers'] = False
             self._add_dictionary(self.current_config, configuration)
             logging.config.dictConfig(self.current_config)
             if self.debug:
-                print 'DEBUG LOGGING: configuration: %r' % self.current_config
+                print >> sys.stderr, 'DEBUG LOGGING: configuration: %r' % self.current_config
         elif isinstance(configuration, str):
             # is a configuration file or resource -- try both
             contents = self._read_file(configuration) or self._read_resource(configuration)
             if not contents:
                 raise IOError('failed to locate logging configuration file: ' + configuration)
             parsed = yaml.load(contents)
-            self.add_configuration(parsed)
+            self.add_configuration(parsed, initial)
         elif isinstance(configuration, list) or isinstance(configuration, tuple):
             for item in configuration:
-                self.add_configuration(item)
+                self.add_configuration(item, initial)
         else:
             raise Exception("ERROR: unable to configure logging from a %s: %s" % (configuration.__class__.__name__, repr(configuration)))
 
+    def _warn_about_supplemental_handlers(self, configuration):
+        if not self.debug:
+            return
+        do_warn = 'root' in configuration and 'handlers' in configuration['root']
+        if not do_warn and 'loggers' in configuration:
+            logger_config = configuration['loggers']
+            for key in logger_config:
+                if 'handlers' in logger_config:
+                    do_warn = True
+                    break
+        if do_warn:
+            print >> sys.stderr, 'WARNING: supplemental file contains handlers (usually supplemental logging config files should just contain level overrides)'
+
     def replace_configuration(self, configuration):
         self.current_config.clear()
-        self.add_configuration(configuration)
+        self.add_configuration(configuration, initial=True)
 
     def set_level(self, scope, level):
         if self.debug:
-            print 'DEBUG LOGGING: set_level: %s: %s\nStack trace:' % (scope,level)
+            print >> sys.stderr, 'DEBUG LOGGING: set_level: %s: %s' % (scope,level)
             self._print_caller()
         config = { 'loggers': { scope: {'level':level }}}
         self.add_configuration(config)
 
     def set_all_levels(self, level):
         if self.debug:
-            print 'DEBUG LOGGING: set_all_levels: %s\nStack trace:' % level
+            print >> sys.stderr, 'DEBUG LOGGING: set_all_levels: %s' % level
             self._print_caller()
         changes = {}
         for scope in self.current_config['loggers'].keys():
@@ -92,7 +107,7 @@ class _LoggingConfiguration(object):
                 return infile.read()
         except IOError, e:
             if e.errno != errno.ENOENT:
-                print 'ERROR: error reading logging configuration file ' + repr(filename) + ': ' + str(e)
+                print >> sys.stderr, 'ERROR: error reading logging configuration file ' + repr(filename) + ': ' + str(e)
         return None
 
     def _read_resource(self, resource_name):
@@ -100,7 +115,7 @@ class _LoggingConfiguration(object):
             return resource_string('', resource_name)
         except IOError, e:
             if e.errno != errno.ENOENT:
-                print 'ERROR: error reading logging configuration resource ' + repr(resource_name) + ': ' + str(e)
+                print >> sys.stderr, 'ERROR: error reading logging configuration resource ' + repr(resource_name) + ': ' + str(e)
         return None
 
     def _add_dictionary(self, current, added):
@@ -122,8 +137,9 @@ class _LoggingConfiguration(object):
 
     def _print_caller(self):
         """ display stack when enabled """
-        try:
-            import traceback
-            print '\n'.join(['%s:%d %s'%(f,l,c) for f,l,m,c in traceback.extract_stack()])
-        except:
-            print 'failed to get stack information'
+        if self.debug=='verbose':
+            try:
+                import traceback
+                print >> sys.stderr, 'Stack trace:\n' + '\t\n'.join(['%s:%d %s'%(f,l,c) for f,l,m,c in traceback.extract_stack()])
+            except:
+                print >> sys.stderr, 'Failed to get stack information'

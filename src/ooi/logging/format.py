@@ -4,7 +4,6 @@ import traceback
 import ooi.exception
 import sys
 
-
 class StackFormatter(logging.Formatter):
     """ logging formatter that:
         - displays exception stack traces one line per frame, with aligned columns
@@ -51,7 +50,7 @@ class StackFormatter(logging.Formatter):
                 lines += self.format_stack(label, stack)
             return '\n'.join(lines)
         except Exception,e:
-            print 'WARNING: StackFormatter could not dislay stack: %s (submitting to default formatter)' % e
+            print >> sys.stderr, 'WARNING: StackFormatter could not dislay stack: %s (submitting to default formatter)' % (e,)
             return super(StackFormatter,self).formatException(record)
 
     def format_stack(self, label, stack):

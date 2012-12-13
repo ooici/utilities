@@ -2,6 +2,7 @@
 import logging.handlers
 import StringIO
 import threading
+import sys
 
 try:
     unicode
@@ -129,7 +130,7 @@ class BlockIOFileHandler(logging.handlers.RotatingFileHandler):
                 self.stream.seek(0, 2)  #due to non-posix-compliant Windows feature
                 position = self.stream.tell()
                 if position <> self._file_size:
-                    print 'BLOCK LOGGER FILE SIZE ERROR: calculated %d, filesystem reports %d bytes' % (self._file_size, position)
+                    print >> sys.stderr, 'BLOCK LOGGER FILE SIZE ERROR: calculated %d, filesystem reports %d bytes' % (self._file_size, position)
             else:
                 position = self._file_size
             if position >= self.maxBytes:
