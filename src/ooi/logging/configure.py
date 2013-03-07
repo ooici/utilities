@@ -122,9 +122,10 @@ class _LoggingConfiguration(object):
             changes = { scope: {'level':level }}
             if recursive:
                 first_part = scope + '.'
-                for name in self.current_config['loggers'].keys():
-                    if name.startswith(first_part):
-                        changes[name] = NOTSET
+                if 'loggers' in self.current_config:
+                    for name in self.current_config['loggers'].keys():
+                        if name.startswith(first_part):
+                            changes[name] = NOTSET
             config = { 'loggers': changes }
             self.add_configuration(config)
         else:
@@ -138,9 +139,10 @@ class _LoggingConfiguration(object):
 
     def set_all_levels(self, level):
         self._debug('DEBUG LOGGING: set_all_levels: %s' % level)
-        changes = {}
-        for scope in self.current_config['loggers'].keys():
-            changes[changes] = {'level':level}
+        changes = {'root':{'level':level}}
+        if 'loggers' in self.current_config:
+            for scope in self.current_config['loggers'].keys():
+                changes[scope] = {'level':'NOTSET'}
         self.add_configuration(changes)
 
     def get_configuration(self):
