@@ -59,7 +59,7 @@ class Timer(object):
 
 
 class Accumulator(object):
-    def __init__(self):
+    def __init__(self, format='%2f'):
         self.lock = Lock()
         self.count = { '__total__': 0 }
         self.min = {}
@@ -67,7 +67,7 @@ class Accumulator(object):
         self.sumsquares = {}
         self.min = {}
         self.max = {}
-
+        self.format = '%d values: ' + format + ' min, ' + format + ' avg, ' + format + ' max, ' + format + ' dev'
     def add(self, timer):
         with self.lock:
             for pair_o_tuples in zip(timer.times[:-1], timer.times[1:], xrange(len(timer.times)-1)):
@@ -101,3 +101,14 @@ class Accumulator(object):
             return 0
         avg = self.get_average(step=step)
         return math.sqrt(self.sumsquares[step]/self.count[step]-avg*avg)
+
+    def __str__(self):
+        return self.to_string()
+
+    def to_string(self, step='__total__'):
+        count = self.get_count()
+        if count==0:
+            return 'no values reported'
+        else:
+            return self.format % ( self.get_count(step), self.get_min(step), self.get_average(step),
+                                    self.get_max(step), self.get_standard_deviation(step))
