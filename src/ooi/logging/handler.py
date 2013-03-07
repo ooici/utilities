@@ -3,6 +3,7 @@ import logging.handlers
 import StringIO
 import threading
 import sys
+import os
 
 try:
     unicode
@@ -136,3 +137,12 @@ class BlockIOFileHandler(logging.handlers.RotatingFileHandler):
             if position >= self.maxBytes:
                     return 1
         return 0
+
+
+class PIDFileHandler(logging.handlers.RotatingFileHandler):
+    """ standard RotatingFileHandler except
+        the filename should contain one '%d'
+        which will be substituted with the PID
+    """
+    def __init__(self, filename, mode='a', maxBytes=0, backupCount=0, encoding=None, delay=0):
+        super(BlockIOFileHandler,self).__init__(filename % os.getpid(), mode, maxBytes, backupCount, encoding, delay)

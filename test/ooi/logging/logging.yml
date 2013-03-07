@@ -4,6 +4,7 @@
 # do not change without testing that it doesn't break any of the unit tests in this project!
 #
 version: 1
+
 formatters:
   default:
     format: '%(asctime)s %(levelname)-8s %(threadName)s %(name)-15s:%(lineno)d %(message)s'
@@ -34,6 +35,12 @@ handlers:
     formatter: stack
     level: DEBUG
     filename: /tmp/unittest-replay.log
+
+context:
+  static:
+    engine: transform
+  thread-local:
+    conversation-id: rpc
 
 loggers:
   stack:

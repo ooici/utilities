@@ -151,25 +151,32 @@ class AddFields(logging.Filter):
         if they change, the values can be copied form thread-local fields with the given names.
         NOTE: graypy will automatically also add: function, pid, process_name, thread_name
     """
-    def __init__(self, thread_local_field_names, constant_field_values):
+    def __init__(self, attribute_name, thread_local_field_names, constant_field_values):
         """
         @param thread_local_field_names is a dictionary mapping the name of the thread-local field
                                         to the name it should have in the logging record.  for example,
                                      if the dictionary has an entry 'a': 'b', then the logging record
-                                        will be set:  record.b = threading.local().a
+                                        will be set:  record.b = threading.local().a           # direct, no local context
+                                        or:           record.b = threading.local().<attribute_name>.a    # attr-style
+                                        or:           record.b = threading.local().<attribute_name>['a'] # dict-style
 
         @param constant_field_values is a dictionary mapping logging field names to string values.
                                      if this dictionary has an entry 'a': 'b', then: record.b = 'a'
         """
+        self.attribute_name = attribute_name
         self.thread_local_field_names = thread_local_field_names
         self.constant_field_values = constant_field_values
 
     def filter(self, record):
         # add values from thread local context
         values = threading.local()
+        if self.attribute_name:
+            values = getattr(values, self.attribute_name)
         for local_field_name, logging_field_name in self.thread_local_field_names.iteritems():
-            if hasattr(values,local_field_name):
-                record.setattr(record,logging_field_name,getattr(values,local_field_name))
+            if hasattr(values, local_field_name):
+                record.setattr(record, logging_field_name, getattr(values,local_field_name))
+            elif isinstance(values, dict) and local_field_name in values:
+                record.setattr(record, logging_field_name, values[local_field_name])
 
         # add values constant for the container
         for key,value in self.constant_field_values.iteritems():
