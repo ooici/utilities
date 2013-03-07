@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='utilities',
-    version='2012.12.12',
+    version='2013.03.07',
     author='Jonathan Newbrough',
     author_email='jonathan.newbrough@gyregroup.com',
     url='https://github.com/newbrough/utilities',
