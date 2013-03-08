@@ -133,8 +133,9 @@ class _LoggingConfiguration(object):
             config['root']['level'] = level
             if recursive:
                 config['loggers'] = {}
-                for name in self.current_config['loggers'].keys():
-                    config['loggers'][name] = NOTSET
+                if 'loggers' in self.current_config:
+                    for name in self.current_config['loggers'].keys():
+                        config['loggers'][name] = NOTSET
             self.add_configuration(config)
 
     def set_all_levels(self, level):
