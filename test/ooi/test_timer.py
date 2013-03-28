@@ -12,6 +12,11 @@ class TestTimer(TestCase):
         self.op2_step2_times = iter([ .01, .02, .01, .01])
         self.a2 = ooi.timer.Accumulator()
 
+    def test_found_caller(self):
+        import importable.create_timer
+        t = importable.create_timer.t
+        self.assertEquals('timing.importable.create_timer', t.logger.name)
+
     def test_time_event(self):
         t = ooi.timer.Timer()
 
@@ -22,7 +27,6 @@ class TestTimer(TestCase):
         t.complete_step()
 
         self.assertEquals(3, len(t.times))
-
 
     def one_step_operation(self):
         t = ooi.timer.Timer()
@@ -59,7 +63,7 @@ class TestTimer(TestCase):
             pass
 
         self.assertEquals(4, self.a2.get_count())
-        self.assertAlmostEqual(self.a2.get_average(), 0.02, places=3 )
+        self.assertAlmostEqual(self.a2.get_average(), 0.02, places=2 )
         self.assertNotEquals(0, self.a2.get_standard_deviation())
         self.assertAlmostEqual(self.a2.get_average('one'), 0.0075, places=3 )
 
