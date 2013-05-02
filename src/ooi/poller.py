@@ -14,7 +14,6 @@ class ConditionPoller(Thread):
     if condition or callback raise exception, stop polling.
     """
     def __init__(self, condition, condition_callback, exception_callback, interval):
-        log.info('ConditionPoller.__init__')
         self.polling_interval = interval
         self._shutdown_now = Event()
         self._condition = condition
@@ -22,11 +21,9 @@ class ConditionPoller(Thread):
         self._on_exception = exception_callback
         super(ConditionPoller,self).__init__()
     def shutdown(self):
-        log.info('shutdown')
         self.is_shutting_down = True
         self._shutdown_now.set()
     def run(self):
-        log.info('run')
         try:
             while not self._shutdown_now.is_set():
                 self._check_condition()
@@ -34,7 +31,6 @@ class ConditionPoller(Thread):
         except:
             log.error('thread failed', exc_info=True)
     def _check_condition(self):
-        log.info('_check_condition')
         try:
             value = self._condition()
             if value:
@@ -45,7 +41,6 @@ class ConditionPoller(Thread):
             if self._on_exception:
                 self._on_exception(e)
     def start(self):
-        log.info('starting')
         super(ConditionPoller,self).start()
 class DirectoryPoller(ConditionPoller):
     """
@@ -53,7 +48,6 @@ class DirectoryPoller(ConditionPoller):
     expects files to be added only, and added in ASCII order.
     """
     def __init__(self, directory, wildcard, callback, exception_callback=None, interval=1):
-        log.info('DirectoryPoller.__init__')
         try:
             if not os.path.isdir(directory):
                 raise ValueError('%s is not a directory'%directory)
@@ -63,7 +57,6 @@ class DirectoryPoller(ConditionPoller):
         except:
             log.error('failed init?', exc_info=True)
     def _check_for_files(self):
-        log.info('checking for files')
         try:
             filenames = glob.glob(self._path)
             # files, but no change since last time
