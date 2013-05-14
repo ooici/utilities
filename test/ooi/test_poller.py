@@ -1,6 +1,8 @@
 
 from ooi.poller import BlockingDirectoryIterator
-from unit_test import TestCase
+from unittest.case import TestCase
+import unittest
+
 from uuid import uuid4
 import os
 import shutil
@@ -61,3 +63,5 @@ class TestFileIteration(TestCase):
             self.exception = e
 
 
+if __name__ == '__main__':
+    unittest.main()

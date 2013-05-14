@@ -50,7 +50,7 @@ class StackFormatter(logging.Formatter):
                 lines += self.format_stack(label, stack)
             return '\n'.join(lines)
         except Exception,e:
-            print >> sys.stderr, 'WARNING: StackFormatter could not dislay stack: %s (submitting to default formatter)' % (e,)
+            #print >> sys.stderr, 'WARNING: StackFormatter could not dislay stack: %s (submitting to default formatter)' % (e,)
             return super(StackFormatter,self).formatException(record)
 
     def format_stack(self, label, stack):

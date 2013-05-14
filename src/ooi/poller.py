@@ -57,27 +57,21 @@ class DirectoryPoller(ConditionPoller):
         except:
             log.error('failed init?', exc_info=True)
     def _check_for_files(self):
-        try:
-            filenames = glob.glob(self._path)
-            # files, but no change since last time
-            if self._last_filename and filenames and filenames[-1]==self._last_filename:
-                log.info('no new files')
-                return None
-            # no files yet, just like last time
-            if not self._last_filename and not filenames:
-                log.info('no matching files')
-                return None
-            if self._last_filename:
-                position = filenames.index(self._last_filename) # raises ValueError if file was removed
-                out = filenames[position+1:]
-            else:
-                out = filenames
-            self._last_filename = filenames[-1]
-            log.info('found files: %r', out)
-            return out
-        except:
-            log.error('check failed', exc_info=True)
-            raise
+        filenames = glob.glob(self._path)
+        # files, but no change since last time
+        if self._last_filename and filenames and filenames[-1]==self._last_filename:
+            return None
+        # no files yet, just like last time
+        if not self._last_filename and not filenames:
+            return None
+        if self._last_filename:
+            position = filenames.index(self._last_filename) # raises ValueError if file was removed
+            out = filenames[position+1:]
+        else:
+            out = filenames
+        self._last_filename = filenames[-1]
+        log.trace('found files: %r', out)
+        return out
 
 class BlockingDirectoryIterator(object):
     """

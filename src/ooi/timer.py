@@ -167,14 +167,14 @@ class Accumulator(_SelfLogging):
             self.max = {}
 
     def add(self, timer):
+        new_values = []
+        for pair_o_tuples in zip(timer.times[:-1], timer.times[1:], xrange(len(timer.times)-1)):
+            label = pair_o_tuples[1][0] or str(pair_o_tuples[2])
+            delta = pair_o_tuples[1][1]-pair_o_tuples[0][1]
+            new_values.append((label,delta))
         with self.lock:
-            for pair_o_tuples in zip(timer.times[:-1], timer.times[1:], xrange(len(timer.times)-1)):
-                label = pair_o_tuples[1][0] or str(pair_o_tuples[2])
-                delta = pair_o_tuples[1][1]-pair_o_tuples[0][1]
+            for label,delta in new_values:
                 self.add_value(label, delta, _can_trigger=False, _have_lock=True)
-            total = timer.times[-1][1]-timer.times[0][1]
-            self.add_value('__total__', total, _can_trigger=False, _have_lock=True)
-            self.add_value(timer.name, total, _can_trigger=False, _have_lock=True)
             self._check_trigger()
 
     def add_value(self, label, value, _can_trigger=True, _have_lock=False):
