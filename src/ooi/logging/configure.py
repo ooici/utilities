@@ -106,7 +106,7 @@ class _LoggingConfiguration(object):
         if do_warn:
             self._log('WARNING: supplemental file contains handlers (usually supplemental logging config files should just contain level overrides)')
 
-    def _handle_context_entries(self):
+    def _handle_context_entries(self, configuration):
         attribute_name = configuration['context']['attribute'] if 'attribute' in configuration['context'] else None
         static = configuration['context']['static'] if 'static' in configuration['context'] else {}
         dynamic = configuration['context']['thread-local'] if 'thread-local' in configuration['context'] else {}

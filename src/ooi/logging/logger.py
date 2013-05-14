@@ -72,6 +72,18 @@ def trace(self, message, *args, **kws):
 logging.Logger.trace = trace
 
 
+## next bit filched from 1.5.2's inspect.py
+#def currentframe():
+#    """Return the frame object for the caller's stack frame."""
+#    try:
+#        raise Exception
+#    except:
+#        return sys.exc_info()[2].tb_frame.f_back
+#
+#if hasattr(sys, '_getframe'): currentframe = lambda: sys._getframe(3)
+## done filching
+
+
 # here the magic happens
 #
 # the _ScopedLogger object has the same functions as a logger,
@@ -96,7 +108,7 @@ class _ScopedLogger(object):
             not intended to be called directly by client code (interface is supposed to look like a Logger).
             instead, call ooi.logging.config.add_filter(filter)
         """
-        self._filters.add(filter)
+        self._filters.append(filter)
 
     def _install_logger(self):
         name = "UNKNOWN_MODULE_NAME"
@@ -112,8 +124,16 @@ class _ScopedLogger(object):
                 name = module.__name__
             elif frame[1]:
                 name = frame[1]
-
+            true_caller_tuple = (name, frame[2], frame[3])
         logger = logging.getLogger(name)
+
+        # fix bug -- first message logged was reporting line number from this file
+        def first_time_find_caller():
+            logger.findCaller = logger._original_find_caller
+            return true_caller_tuple
+        logger._original_find_caller = logger.findCaller
+        logger.findCaller = first_time_find_caller
+
         for filter in self._filters:
             logger.addFilter(filter)
 

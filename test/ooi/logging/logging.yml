@@ -42,7 +42,13 @@ context:
   thread-local:
     conversation-id: rpc
 
+root:
+  handlers: [stack]
+  level: INFO
+
 loggers:
+  ooi.poller:
+    level: DEBUG
   stack:
     handlers: [stack]
     level: INFO
